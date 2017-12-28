@@ -1,0 +1,212 @@
+﻿@model IEnumerable<WebApplication1.@base.modelo>
+@{
+    ViewBag.Title = "Mardis";
+}
+@{
+
+}
+@if (Model != null)
+{
+    if (Model.Count() > 0)
+    {
+        <div>
+            <h1>  @Model.First().name </h1>
+            <br>
+        </div>
+        <div>
+                    
+                        @{Html.RenderAction("_PartialValidate", "viewimages", new { @uri = Model.First().uri });}
+                   
+
+                </div>
+           
+                <div class="form-horizontal">
+
+                    <div class="form-group">
+                        <div class="col col-md-4 offset-md-1">
+                            <h1>Codigo: <small> @Model.First().Code </small></h1>
+                        </div>
+                        <input type="text" id="IdURI" hidden value=" @Model.First().uri" />
+                        </div>
+                </div>
+               
+                }
+                else
+                {
+                <div>
+                    <h1>No existen fotos</h1>
+                    <hr />
+                </div>
+                }
+                }
+                else
+                {
+                <div>
+                    <h1>No existen fotos</h1>
+                    <hr />
+                </div>
+                }
+                <div class="container">
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="col col-md-4 offset-md-1">
+                                <img src=" @item.base64" class="imgM" id=@item.nameImg onclick="image(this)" />
+                                <label class="text-id">@item.nameImg</label>
+                            </div>
+                        }
+                    }
+
+                </div>
+
+                <!-- The Modal -->
+                <div id="myModal" class="modal">
+
+                    <!-- The Close Button -->
+                    <span class="close" onclick="document.getElementById('myModal').style.display='none'">&times;</span>
+
+                    <!-- Modal Content (The Image) -->
+                    <img class="modal-content" id="img01">
+
+                    <!-- Modal Caption (Image Text) -->
+                    <div id="caption"></div>
+                </div>
+<footer>
+    <p>&copy; @DateTime.Now.Year - Mardis</p>
+</footer>
+                <script>
+
+    var modal = document.getElementById('myModal');
+
+    // Get the image and insert it inside the modal - use its "alt" text as a caption
+    var img = document.getElementById('myImg');
+    var modalImg = document.getElementById("img01");
+    var captionText = document.getElementById("caption");
+
+     RMtdObservacion($("#IdURI").val().toString());
+    function image(e) {
+        modal.style.display = "block";
+        modalImg.src = e.src;
+        captionText.innerHTML = e.alt;
+
+    }
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    function RMtdObservacion(id) {
+        $("#content-chk").empty();
+
+        $("#Observacion").val("");
+        $.ajax({
+            url: '@Url.Action("ValidateSave", "viewimages")',
+                        type: "POST",
+                        content: "application/json; charset=utf-8",
+                        data: {
+                            uri: id
+
+                        },
+                        success: function (data) {
+
+                            $.each(data, function (index, value) {
+                                if (value.id != null) {
+                                if (value.estado != 0) {
+                                    $("#content-chk").append(" <div class='checkbox checkbox-success'>" +
+                                        "<input id='" + value.id + "' type='checkbox' checked='' onclick='onToggle()' >"  +
+                                        "<label for='" + value.id + "'>" +
+                                         "Volver a visitar"
+                                        + "</label >" +
+                                        "</div>");
+                                    $("#Observacion").prop('disabled', false);
+                                    $("#Idestado").val("1");
+                                } else {
+                                    $("#content-chk").append(" <div class='checkbox checkbox-success'>" +
+                                        "<input id='" + value.id + "' type='checkbox' onclick='onToggle()' >" +
+                                        "<label for='" + value.id + "'>" +
+                                        "Volver a visitar"
+                                        + "</label >" +
+                                        "</div>");
+                                    $("#Idestado").val("0");
+                                    $("#Observacion").prop('disabled', true);
+                                    }
+                             
+                                $("#Observacion").val(value.observacion.toString());
+                       
+                                } else {
+
+                                    $("#content-chk").append(" <div class='checkbox checkbox-success'>" +
+                                        "<input id='" + value.id + "' type='checkbox' onclick='onToggle()' >" +
+                                        "<label for='" + value.id + "'>" +
+                                        "Volver a visitar"
+                                        + "</label >" +
+                                        "</div>");
+                                    $("#Idestado").val("0");
+                                    $("#Observacion").prop('disabled', false);
+                                }
+
+                                });
+
+                            $("#IdURI").val(id);
+                           
+
+
+                        },
+
+                        error: function () {
+
+
+                        }
+
+
+                    });
+    }
+    function onToggle() {
+        if ($("#Idestado").val().toString() == "1") {
+            $("#Idestado").val("0")
+                    $("#Observacion").prop('disabled', true);
+    
+        } else {
+            $("#Idestado").val("1")
+                    $("#Observacion").prop('disabled', false);
+        };
+    }
+    function Save() {
+        var status = $("#Idestado").val().toString();
+        var descrip = $("#Observacion").val().toString();
+        var uris = $("#IdURI").val().toString();
+               $.ajax({
+                        url: '@Url.Action("ValidateSaveDt", "viewimages")',
+                        type: "POST",
+                        content: "application/json; charset=utf-8",
+                        data: {
+                            uri: uris,
+                            stat: status,
+                            des: descrip
+                        },
+                        success: function (data) {
+                            $.toaster({
+                                priority: 'success',
+                                title: 'Aviso',
+                                message: "La información se guardo correctamente",
+                                settings: {
+                                    timeout: 5500
+                                }
+                            });
+                        },
+
+                        error: function () {
+
+
+                        }
+
+
+                    });
+                    }
+            
+
+                </script>
